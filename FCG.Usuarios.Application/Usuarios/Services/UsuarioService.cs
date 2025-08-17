@@ -107,6 +107,10 @@ public class UsuarioService : IUsuarioService
 
     public async Task<bool> ExcluirAsync(Guid id)
     {
+        var usuario = await _usuarioRepository.ObterPorIdAsync(id);
+        if (usuario == null || !usuario.Ativo)
+            return false;
+
         return await _usuarioRepository.ExcluirAsync(id);
     }
 

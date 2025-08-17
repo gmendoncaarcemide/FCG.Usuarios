@@ -169,8 +169,8 @@ public class UsuariosController : ControllerBase
 		{
 			var sucesso = await _service.ExcluirAsync(id);
 			if (!sucesso)
-				return NotFound($"Usuário com ID {id} não encontrado");
-			return Ok($"Usuário com ID {id} excluído com sucesso");
+				return NotFound($"Usuário com ID {id} não encontrado ou já foi excluído");
+			return Ok($"Usuário com ID {id} foi desativado com sucesso");
 		}
 		catch (Exception ex)
 		{

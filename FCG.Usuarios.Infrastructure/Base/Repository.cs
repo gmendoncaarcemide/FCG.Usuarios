@@ -42,13 +42,12 @@ public abstract class Repository<T> : IRepository<T> where T : Entity
     public virtual async Task<bool> ExcluirAsync(Guid id)
     {
         var entity = await ObterPorIdAsync(id);
-        if (entity != null)
-        {
-            entity.Ativo = false;
-            entity.DataAtualizacao = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        return false;
+        if (entity == null || !entity.Ativo)
+            return false;
+
+        entity.Ativo = false;
+        entity.DataAtualizacao = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return true;
     }
 } 
