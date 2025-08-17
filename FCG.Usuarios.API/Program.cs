@@ -1,14 +1,10 @@
-using FCG.Usuarios.API.Endpoints;
-using FCG.Usuarios.Application.Usuarios.Interfaces;
-using FCG.Usuarios.Application.Usuarios.Services;
-using FCG.Usuarios.Domain.Usuarios.Interfaces;
-using FCG.Usuarios.Infrastructure.Usuarios.Repositories;
 using FCG.Usuarios.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
+using FCG.Usuarios.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,11 +18,38 @@ builder.Host.UseSerilog();
 
 // Configuração dos serviços
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "FCG.Usuarios.API", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando o esquema Bearer. Exemplo: 'Bearer {token}'",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // Configuração do Entity Framework
-builder.Services.AddDbContext<UsuariosDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddUsuariosDbContext(builder.Configuration);
 
 // Configuração da autenticação JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -41,7 +64,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "ChaveSecretaPadrao123456789"))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
 
@@ -51,10 +74,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Usuario", policy => policy.RequireRole("Usuario", "Administrador", "Moderador"));
 });
 
-// Registro dos serviços
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddUsuariosService();
 
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -69,8 +91,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Mapeamento dos endpoints
-app.MapUsuarioEndpoints();
+app.MapControllers();
 
 // Migração automática do banco de dados
 using (var scope = app.Services.CreateScope())

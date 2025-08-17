@@ -2,22 +2,23 @@ using FCG.Usuarios.Application.Usuarios.Interfaces;
 using FCG.Usuarios.Application.Usuarios.ViewModels;
 using FCG.Usuarios.Domain.Usuarios.Entities;
 using FCG.Usuarios.Domain.Usuarios.Interfaces;
-using BCrypt.Net;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace FCG.Usuarios.Application.Usuarios.Services;
 
 public class UsuarioService : IUsuarioService
 {
     private readonly IUsuarioRepository _usuarioRepository;
-    private const string JWT_SECRET = "ChaveSecretaPadrao123456789012345678901234567890";
+    private readonly IConfiguration _configuration;
 
-    public UsuarioService(IUsuarioRepository usuarioRepository)
+    public UsuarioService(IUsuarioRepository usuarioRepository, IConfiguration configuration)
     {
         _usuarioRepository = usuarioRepository;
+        _configuration = configuration;
     }
 
     public async Task<UsuarioResponse> CriarAsync(CriarUsuarioRequest request)
@@ -151,8 +152,11 @@ public class UsuarioService : IUsuarioService
     private string GerarJwtToken(Usuario usuario)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(JWT_SECRET);
-        
+        var key = Encoding.ASCII.GetBytes(_configuration.GetSection("Jwt:Key").Value!);
+        var expires = double.Parse(_configuration.GetSection("Jwt:ExpiryInHours").Value!);
+        var audience = _configuration.GetSection("Jwt:Audience").Value!;
+        var issuer = _configuration.GetSection("Jwt:Issuer").Value!;
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
@@ -162,8 +166,10 @@ public class UsuarioService : IUsuarioService
                 new Claim(ClaimTypes.Name, usuario.Nome),
                 new Claim(ClaimTypes.Role, usuario.TipoUsuario.ToString())
             }),
-            Expires = DateTime.UtcNow.AddHours(24),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            Expires = DateTime.UtcNow.AddHours(expires),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            Audience = audience,
+            Issuer = issuer
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
