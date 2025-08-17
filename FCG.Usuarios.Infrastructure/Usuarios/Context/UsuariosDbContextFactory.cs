@@ -8,7 +8,7 @@ namespace FCG.Usuarios.Infrastructure
         public UsuariosDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UsuariosDbContext>();
-            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=FCG_Usuarios;Trusted_Connection=true;");
+            optionsBuilder.UseNpgsql("Host=db.elcvczlnnzbgcpsbowkg.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=Fiap@1234");
 
             return new UsuariosDbContext(optionsBuilder.Options);
         }
