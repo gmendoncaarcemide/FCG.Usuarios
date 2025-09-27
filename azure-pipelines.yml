@@ -1,0 +1,68 @@
+trigger:
+  branches:
+    exclude:
+      - master
+
+pr:
+  branches:
+    include:
+      - "*"
+    exclude:
+      - master
+
+stages:
+  - stage: CI
+    displayName: "Build & Test"
+    condition: or(eq(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.Reason'], 'Manual'))
+    jobs:
+      - job: BuildAndTest
+        displayName: "Build and run tests"
+        pool:
+          name: Default
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '9.0.x'
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+
+          - script: dotnet build --configuration Release
+            displayName: 'Build project'
+
+          - script: dotnet test --configuration Release
+            displayName: 'Run tests'
+
+  - stage: CD
+    displayName: "Microsservice Deployment Usuarios"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: DeployMicrosserviceUsuarios
+        displayName: "Microsservice Deployment Usuarios"
+        pool:
+          name: Default
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '9.0.x'
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+
+          - script: dotnet publish --configuration Release --output $(Build.ArtifactStagingDirectory)
+            displayName: 'Publish project'
+
+          - task: ArchiveFiles@2
+            inputs:
+              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
+              includeRootFolder: false
+              archiveType: 'zip'
+              archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              replaceExistingArchive: true
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'postech-fase3'
+              appType: 'webApp'
+              appName: 'microsservico-usuarios-postech'
+              package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+              runtimeStack: 'DOTNETCORE|9.0'
+              resourceGroupName: 'ACR'
