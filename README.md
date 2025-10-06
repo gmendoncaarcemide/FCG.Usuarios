@@ -102,31 +102,33 @@ FCG_USUARIOS/
 | `DELETE` | `/api/usuarios/{id:guid}` | Desativa (exclui logicamente) o usuário. |
 
 ## 🗄️ Modelo de Dados
-###📊 **Tabela: Usuarios**
-Id (UUID)
-Nome (String)
-Email (String)
-SenhaHash (String)
-DataNascimento (DateTime)
-Perfil (Enum): Admin, Jogador, Desenvolvedor
-DataCriacao (DateTime)
-DataAtualizacao (DateTime?)
+### 📊 **Tabela: Usuarios**
+- `Id` (UUID)
+- `Nome` (String)
+- `Email` (String)
+- `SenhaHash` (String)
+- `DataNascimento` (DateTime)
+- `Perfil` (Enum): Admin, Jogador, Desenvolvedor
+- `DataCriacao` (DateTime)
+- `DataAtualizacao` (DateTime?)
+
 
 ## 🐞 Logs e Monitoramento
 ### 📝 **Serilog**
-Logs estruturados com Serilog
-Arquivos de log por data em /logs/
-Logs de console para desenvolvimento
-Formato: usuarios-api-YYYY-MM-DD.txt
+- Logs estruturados com Serilog
+- Arquivos de log por data em /logs/
+- Logs de console para desenvolvimento
+- Formato: usuarios-api-YYYY-MM-DD.txt
 
 ### 🔍 **Swagger**
 
-Documentação automática da API
-Interface interativa para testes
-Disponível em /swagger quando em desenvolvimento
+- Documentação automática da API
+- Interface interativa para testes
+- Disponível em /swagger quando em desenvolvimento
 
 ## 🚀 Deploy e Produção
 
 ### ☁️ **Supabase**
-Banco de dados PostgreSQL gerenciado
-Migrations aplicadas automaticamente na inicialização
+- Banco de dados PostgreSQL gerenciado
+- Migrations aplicadas automaticamente na inicialização
+
