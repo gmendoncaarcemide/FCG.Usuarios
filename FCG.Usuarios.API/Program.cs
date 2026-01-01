@@ -12,6 +12,12 @@ using FCG.Usuarios.Application.EventHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Application Insights APM
+builder.Services.AddApplicationInsightsTelemetry(options =>
+{
+    options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+});
+
 // Configuração do Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
