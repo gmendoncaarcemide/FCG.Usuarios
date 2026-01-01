@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using FCG.Usuarios.Application.Messaging.Interfaces;
+using FCG.Usuarios.Application.Messaging.Events;
 
 namespace FCG.Usuarios.Application.Usuarios.Services;
 
@@ -14,11 +16,13 @@ public class UsuarioService : IUsuarioService
 {
     private readonly IUsuarioRepository _usuarioRepository;
     private readonly IConfiguration _configuration;
+    private readonly IEventBus _eventBus;
 
-    public UsuarioService(IUsuarioRepository usuarioRepository, IConfiguration configuration)
+    public UsuarioService(IUsuarioRepository usuarioRepository, IConfiguration configuration, IEventBus eventBus)
     {
         _usuarioRepository = usuarioRepository;
         _configuration = configuration;
+        _eventBus = eventBus;
     }
 
     public async Task<UsuarioResponse> CriarAsync(CriarUsuarioRequest request)
@@ -39,6 +43,17 @@ public class UsuarioService : IUsuarioService
         };
 
         var usuarioCriado = await _usuarioRepository.AdicionarAsync(usuario);
+
+        var usuarioCriadoEvent = new UsuarioCriadoEvent
+        {
+            UsuarioId = usuarioCriado.Id,
+            Email = usuarioCriado.Email,
+            Nome = usuarioCriado.Nome,
+            DataCriacao = usuarioCriado.DataCriacao
+        };
+
+        await _eventBus.PublishAsync(usuarioCriadoEvent);
+
         return MapearParaResponse(usuarioCriado);
     }
 

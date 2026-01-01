@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FCG.Usuarios.Application\FCG.Usuarios.Application.csproj" />
     <ProjectReference Include="..\FCG.Usuarios.Infrastructure\FCG.Usuarios.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\FCG.Shared.Messaging\FCG.Shared.Messaging.csproj" />
   </ItemGroup>
 
-</Project> 
+</Project>

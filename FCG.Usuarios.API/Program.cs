@@ -5,6 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
 using FCG.Usuarios.Application;
+using FCG.Usuarios.Application.Messaging.Extensions;
+using FCG.Usuarios.Application.Messaging.Interfaces;
+using FCG.Usuarios.Application.Messaging.Events;
+using FCG.Usuarios.Application.EventHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +80,11 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddUsuariosService();
 
+builder.Services.AddRabbitMQMessaging(builder.Configuration);
+
+builder.Services.AddScoped<IEventHandler<UsuarioCriadoEvent>, UsuarioCriadoEventHandler>();
+builder.Services.AddScoped<IEventHandler<NotificacaoEvent>, NotificacaoEventHandler>();
+
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -93,6 +102,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UsuariosDbContext>();
     db.Database.Migrate();
+    
+    var eventBus = scope.ServiceProvider.GetRequiredService<IEventBus>();
+    eventBus.Subscribe<UsuarioCriadoEvent, UsuarioCriadoEventHandler>();
+    eventBus.Subscribe<NotificacaoEvent, NotificacaoEventHandler>();
 }
 
 app.Run(); 
