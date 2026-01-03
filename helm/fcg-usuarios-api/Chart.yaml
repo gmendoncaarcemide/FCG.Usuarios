@@ -1,0 +1,5 @@
+apiVersion: v2
+name: fcg-usuarios-api
+version: 0.1.0
+description: Helm chart for deploying FCG.Usuarios.API (.NET 8)
+type: application

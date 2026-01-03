@@ -1,0 +1,23 @@
+replicaCount: 1
+image:
+  repository: fabriciorosanet/fcg-usuarios-api
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+resources: {}
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+configmap:
+  enabled: true
+  data:
+    ASPNETCORE_ENVIRONMENT: "Production"
+    CUSTOM_CONFIG: "value"
+secret:
+  enabled: true
+  data:
+    ConnectionStrings__DefaultConnection: "Host=aws-1-us-east-2.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.elcvczlnnzbgcpsbowkg;Password=Fiap@1234;Ssl Mode=Require;Trust Server Certificate=true;"

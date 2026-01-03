@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copia somente o necessário do monorepo
-COPY FCG.Usuarios/ ./FCG.Usuarios/
+COPY . ./FCG.Usuarios/
 
 # Restaura dependências e publica
 RUN dotnet restore "FCG.Usuarios/FCG.Usuarios.API/FCG.Usuarios.API.csproj"
