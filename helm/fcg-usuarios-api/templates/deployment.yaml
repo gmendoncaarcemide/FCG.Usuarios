@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fcg-usuarios-api.fullname" . }}
+  labels:
+    app: {{ include "fcg-usuarios-api.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "fcg-usuarios-api.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "fcg-usuarios-api.name" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "fcg-usuarios-api.fullname" . }}-config
+            - secretRef:
+                name: {{ include "fcg-usuarios-api.fullname" . }}-secret
